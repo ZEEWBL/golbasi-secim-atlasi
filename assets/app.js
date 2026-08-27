@@ -119,6 +119,102 @@
     return map[k] || name.replace(/ PARTİSİ$/i, "").replace(/ PARTİ$/i, "").replace(/ Parti$/i, "");
   }
 
+  const LOGO_BY_KEY = {
+    chp: "chp.svg",
+    ak: "ak-parti.png",
+    mhp: "mhp.svg",
+    "milliyetci hareket": "mhp.svg",
+    iyi: "iyi.png",
+    dem: "dem.png",
+    "yesil sol": "dem.png",
+    ysp: "dem.png",
+    "halklarin esitlik": "dem.png",
+    bbp: "bbp.png",
+    "buyuk birlik": "bbp.png",
+    "yeniden refah": "yrp.png",
+    zafer: "zafer.png",
+    saadet: "saadet.png",
+    tip: "tip.png",
+    "turkiye isci": "tip.png",
+    deva: "deva.svg",
+    memleket: "memleket.png",
+    dsp: "dsp.png",
+    dp: "dp.png",
+    demokrat: "dp.png",
+    vatan: "vatan.png",
+    btp: "btp.png",
+    tkp: "tkp.png",
+    huda: "huda-par.png",
+    "huda par": "huda-par.png"
+  };
+  const PORTRAIT_BY_FOLD = {
+    "mansur yavas": "mansur-yavas.jpg",
+    "turgut altinok": "turgut-altinok.jpg",
+    "recep tayyip erdogan": "recep-tayyip-erdogan.jpg",
+    "kemal kilicdaroglu": "kemal-kilicdaroglu.jpg",
+    "sinan ogan": "sinan-ogan.jpg",
+    "muharrem ince": "muharrem-ince.jpg"
+  };
+
+  function initialsOf(s) {
+    const t = displayName(s).trim();
+    if (!t) return "?";
+    if (t.length <= 3 && !/\s/.test(t)) return t.toLocaleUpperCase("tr-TR");
+    const parts = t.split(/\s+/).filter(Boolean);
+    if (parts.length === 1) return parts[0].slice(0, 2).toLocaleUpperCase("tr-TR");
+    return (parts[0][0] + parts[parts.length - 1][0]).toLocaleUpperCase("tr-TR");
+  }
+  function logoFile(party) {
+    const k = partyKey(party);
+    if (!k) return null;
+    if (LOGO_BY_KEY[k]) return LOGO_BY_KEY[k];
+    for (const [key, file] of Object.entries(LOGO_BY_KEY)) {
+      if (k === key || k.startsWith(key + " ") || k.endsWith(" " + key) || k.includes(" " + key + " ")) return file;
+    }
+    return null;
+  }
+  function portraitFile(name) {
+    return PORTRAIT_BY_FOLD[foldTR(displayName(name))] || null;
+  }
+  function iniSpan(text, color, extraCls) {
+    return `<span class="ini${extraCls ? " " + extraCls : ""}" style="background:${color || MUTED}" aria-hidden="true">${esc(text)}</span>`;
+  }
+  function mediaWithFallback(imgClass, src, alt, ini, color, iniCls) {
+    return `<span class="media-wrap"><img class="${imgClass}" src="${src}" alt="${esc(alt)}" loading="lazy" decoding="async" onerror="this.style.display='none';this.nextElementSibling.removeAttribute('hidden')">${iniSpan(ini, color, iniCls).replace("<span ", "<span hidden ")}</span>`;
+  }
+  function logoMark(party, cls) {
+    const file = logoFile(party);
+    const col = partyColor(party);
+    const alt = partyShort(party) || displayName(party) || "parti";
+    const ini = initialsOf(alt);
+    const imgCls = "logo-img" + (cls ? " " + cls : "");
+    if (!file) return iniSpan(ini, col, cls);
+    return mediaWithFallback(imgCls, "./assets/logos/" + file, alt, ini, col, cls);
+  }
+  function portraitMark(name, party, cls) {
+    const file = portraitFile(name);
+    const col = partyColor(party || name);
+    const alt = displayName(name);
+    const ini = initialsOf(alt);
+    const imgCls = "portrait" + (cls ? " " + cls : "");
+    if (!file) return iniSpan(ini, col, "portrait-ini" + (cls ? " " + cls : ""));
+    return mediaWithFallback(imgCls, "./assets/portraits/" + file, alt, ini, col, "portrait-ini" + (cls ? " " + cls : ""));
+  }
+  function contestantMark(c, cls) {
+    if (c && !c.isParti) return portraitMark(c.ad || c.label, c.parti, cls);
+    return logoMark((c && (c.parti || c.ad)) || "", cls);
+  }
+  function winnerMarks(w) {
+    if (!w) return "";
+    if (w.tie && w.tied && w.tied.length) {
+      return w.tied.map((t) => contestantMark(t, "sm")).join("");
+    }
+    if (w.tie) return logoMark(w.partiRaw || w.parti, "sm");
+    const isPerson = w.label && w.parti && foldTR(w.label) !== foldTR(w.parti) && foldTR(w.label) !== foldTR(w.partiRaw || "");
+    if (isPerson) return portraitMark(w.label, w.partiRaw || w.parti, "sm");
+    return logoMark(w.partiRaw || w.parti || w.label, "sm");
+  }
+
   function esc(s) {
     return String(s ?? "").replace(/[&<>"']/g, (c) => ({
       "&": "&amp;",
@@ -370,8 +466,10 @@
           const w = max ? (100 * c.oy) / max : 0;
           const col = partyColor(c.parti || c.ad);
           const sub = c.isParti ? "" : esc(partyShort(c.parti));
+          const mark = contestantMark(c);
+          const partyLogo = !c.isParti && c.parti ? logoMark(c.parti, "sm") : "";
           return `<div class="bar-row">
-            <div class="lab"><b>${esc(c.label)}</b>${sub ? `<span>${sub}</span>` : ""}</div>
+            <div class="lab">${mark}<div class="lab-text"><b>${esc(c.label)}</b>${sub ? `<span class="lab-sub">${partyLogo}${sub}</span>` : ""}</div></div>
             <div class="track" role="img" aria-label="${esc(c.label)} ${fmt(c.oy)} oy">
               <div class="fill" style="width:${w}%;background:${col}"></div>
             </div>
@@ -500,7 +598,7 @@
         const size = 11 + (11 * Math.log(row.secmen)) / Math.log(maxS);
         const cls = w.tie ? "chip tie" : "chip";
         return `<a class="${cls}" href="#/mahalle/${row.id}/2024_ilce_baskan" style="font-size:${size.toFixed(1)}px" title="${esc(meta.ad)} · ${esc(w.label)}">
-          <span class="sw" style="background:${w.color}"></span>${esc(meta.ad)}
+          ${winnerMarks(w)}${esc(meta.ad)}
         </a>`;
       })
       .join("");
@@ -512,7 +610,7 @@
       const k = katilim(race.ilce);
       return `<a class="card" href="#/karsilastir" style="text-decoration:none;color:inherit">
         <p class="kicker">${esc(meta.kisa)}</p>
-        <p style="margin:.15rem 0 .35rem;font-weight:700">${esc(top.label)}${top.parti && !top.isParti ? ` <span style="color:var(--muted);font-weight:600">· ${esc(partyShort(top.parti))}</span>` : ""}</p>
+        <p class="winner-line">${contestantMark(top, "sm")}<span><b>${esc(top.label)}</b>${top.parti && !top.isParti ? ` <span style="color:var(--muted);font-weight:600">· ${esc(partyShort(top.parti))}</span>` : ""}</span></p>
         <p class="foot">${fmt(top.oy)} oy · ${pct(top.oy, race.ilce.gecerli)} geçerli · katılım ${k ? N2.format(k) + "%" : "—"}</p>
       </a>`;
     }).join("");
@@ -528,13 +626,13 @@
         <article class="card featured" style="--p:#E30A17">
           <p class="kicker">31 Mart 2024 · İlçe belediye başkanı</p>
           <p class="stat-num">${fmt(39457)} <small>${pct(39457, 88999)}</small></p>
-          <p style="margin:0 0 .35rem;font-weight:700;font-size:1.12rem"><span class="party-dot" style="background:#E30A17"></span>Yakup Odabaşı · CHP</p>
+          <p class="hero-person">${portraitMark("Yakup Odabaşı", "CHP", "hero")}${logoMark("CHP", "hero")}<span>Yakup Odabaşı · CHP</span></p>
           <p class="foot">Geçerli ${fmt(88999)} · kullanılan ${fmt(92325)} · seçmen ${fmt(111188)}. İkinci Gökhan Koçak (BBP) ${fmt(22610)}; üçüncü Ramazan Şimşek (MHP) ${fmt(19324)}.</p>
         </article>
         <article class="card featured" style="--p:#E30A17">
           <p class="kicker">31 Mart 2024 · Büyükşehir — Gölbaşı oyları</p>
           <p class="stat-num">${fmt(52760)} <small>${pct(52760, 89200)}</small></p>
-          <p style="margin:0 0 .35rem;font-weight:700;font-size:1.12rem"><span class="party-dot" style="background:#E30A17"></span>Mansur Yavaş · CHP</p>
+          <p class="hero-person">${portraitMark("Mansur Yavaş", "CHP", "hero")}${logoMark("CHP", "hero")}<span>Mansur Yavaş · CHP</span></p>
           <p class="foot">Turgut Altınok (AK Parti) ${fmt(29754)}. İlçe başkanlığı ile büyükşehir Gölbaşı’da aynı rengin önde olduğu, fakat payların farklılaştığı bir tablo.</p>
         </article>
       </div>
@@ -550,7 +648,7 @@
           <p class="n">${pct(ilce.ilce.kullanan, ilce.ilce.secmen)}</p>
           <p class="foot">2023 MV ${pct(mv.ilce.kullanan, mv.ilce.secmen)} idi</p></div>
         <div class="metric"><p class="kicker">2019 ilçe kazanan</p>
-          <p class="n" style="font-size:1.05rem"><span class="party-dot" style="background:#870000"></span>Ramazan Şimşek</p>
+          <p class="n hero-person" style="font-size:1.05rem">${portraitMark("Ramazan Şimşek", "MHP")}${logoMark("MHP")}<span>Ramazan Şimşek</span></p>
           <p class="foot">MHP ${fmt(41055)} · ${pct(41055, 75782)}</p></div>
       </div>
 
@@ -588,10 +686,10 @@
       <section class="card">
         <div class="chips">${chips}</div>
         <div class="legend">
-          <span><i style="background:#E30A17"></i>CHP Odabaşı (${wmap["CHP"] || 0})</span>
-          <span><i style="background:#6B0000"></i>BBP Koçak (${wmap["BÜYÜK BİRLİK"] || 0})</span>
-          <span><i style="background:#870000"></i>MHP Şimşek (${wmap["MHP"] || 0})</span>
-          <span><i style="background:#F15A22"></i>Yeniden Refah (${wmap["YENİDEN REFAH"] || 0})</span>
+          <span>${logoMark("CHP", "sm")}CHP Odabaşı (${wmap["CHP"] || 0})</span>
+          <span>${logoMark("BÜYÜK BİRLİK", "sm")}BBP Koçak (${wmap["BÜYÜK BİRLİK"] || 0})</span>
+          <span>${logoMark("MHP", "sm")}MHP Şimşek (${wmap["MHP"] || 0})</span>
+          <span>${logoMark("YENİDEN REFAH", "sm")}Yeniden Refah (${wmap["YENİDEN REFAH"] || 0})</span>
           <span><i style="background:#9a7433"></i>Beraberlik (${wmap["BERABERLİK"] || 0})</span>
         </div>
       </section>
@@ -655,8 +753,8 @@
           .map((x) => {
             const href = `#/mahalle/${x.m.id}/2024_ilce_baskan`;
             const badge = x.w.tie
-              ? `<span class="badge tie">Beraberlik ${fmt(x.w.oy)}–${fmt(x.w.oy)}</span>`
-              : `<span class="badge"><span class="sw" style="display:inline-block;width:.55rem;height:.55rem;border-radius:50%;background:${x.w.color};margin-right:.3rem"></span>${esc(x.w.parti || x.w.label)}</span>`;
+              ? `<span class="badge tie">${winnerMarks(x.w)}Beraberlik ${fmt(x.w.oy)}–${fmt(x.w.oy)}</span>`
+              : `<span class="badge">${winnerMarks(x.w)}${esc(x.w.parti || x.w.label)}</span>`;
             return `<tr tabindex="0" data-href="${href}">
               <td><a class="mah" href="${href}">${esc(x.m.ad)}</a></td>
               <td class="num">${fmt(x.m.adnks["2024"])}</td>
@@ -778,7 +876,7 @@
           ? `<div class="stack">
         <section class="card">
           <p class="kicker">${esc(meta.uzun)}</p>
-          <h2 style="margin-top:.2rem">${w.tie ? "Beraberlik" : esc(w.label)}${!w.tie && w.parti ? ` · ${esc(w.parti)}` : ""}</h2>
+          <h2 class="winner-line" style="margin-top:.2rem">${w ? winnerMarks(w) : ""}<span>${w.tie ? "Beraberlik" : esc(w.label)}${!w.tie && w.parti ? ` · ${esc(w.parti)}` : ""}</span></h2>
           <div class="dl" style="margin:.8rem 0 1rem">
             <div><dt>Sandık</dt><dd>${fmt(row.sandik)}</dd></div>
             <div><dt>Seçmen</dt><dd>${fmt(row.secmen)}</dd></div>
@@ -854,11 +952,11 @@
       ? shown
           .map((x) => {
             const ba = x.wa.tie
-              ? `<span class="badge tie">Beraberlik</span>`
-              : `<span class="badge"><span class="party-dot" style="background:${x.wa.color}"></span>${esc(x.wa.parti || x.wa.label)}</span>`;
+              ? `<span class="badge tie">${winnerMarks(x.wa)}Beraberlik</span>`
+              : `<span class="badge">${winnerMarks(x.wa)}${esc(x.wa.parti || x.wa.label)}</span>`;
             const bb = x.wb.tie
-              ? `<span class="badge tie">Beraberlik</span>`
-              : `<span class="badge"><span class="party-dot" style="background:${x.wb.color}"></span>${esc(x.wb.parti || x.wb.label)}</span>`;
+              ? `<span class="badge tie">${winnerMarks(x.wb)}Beraberlik</span>`
+              : `<span class="badge">${winnerMarks(x.wb)}${esc(x.wb.parti || x.wb.label)}</span>`;
             return `<tr data-href="#/mahalle/${x.m.id}">
               <td><a class="mah" href="#/mahalle/${x.m.id}">${esc(x.m.ad)}</a></td>
               <td>${ba}<div class="foot">${esc(x.wa.label)}</div></td>
@@ -959,6 +1057,10 @@
           ${yazim.map((m) => `<li>${esc(m.ad)} — YSK <code>${esc(m.ysk)}</code> · belediye <code>${esc(m.belediye)}</code></li>`).join("")}
         </ul>
         <p class="note">Kaynak: YSK <code>acikveri.ysk.gov.tr</code> / <code>data.ysk.gov.tr</code> (ilceId=637); TÜİK ADNKS 31 Aralık. İlçe toplamı 54 mahallenin toplamıdır.</p>
+      </section>
+      <section class="card" style="margin-top:1rem">
+        <h2>Logolar ve fotoğraflar</h2>
+        <p>Parti logoları ve siyasetçi fotoğrafları Wikimedia Commons veya Vikipedi’den (Special:FilePath) indirildi; kampanya malzemesi değiller. Wikimedia’da dosyası bulunmayan adaylar için parti rengi üzerinde baş harf rozeti kullanılır. Kaynak, lisans ve dosya adları <a href="./assets/ATTRIBUTION.md">ATTRIBUTION.md</a> dosyasındadır.</p>
       </section>
     </div>`);
   }
