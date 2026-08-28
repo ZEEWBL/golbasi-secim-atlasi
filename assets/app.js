@@ -14,6 +14,7 @@
 
   const RACES = [
     { id: "2019_ilce_baskan", yil: 2019, kisa: "2019 İlçe", uzun: "2019 İlçe Belediye Başkanlığı", tur: "aday" },
+    { id: "2019_buyuksehir", yil: 2019, kisa: "2019 Büyükşehir", uzun: "2019 Ankara Büyükşehir Belediye Başkanlığı — Gölbaşı", tur: "aday" },
     { id: "2023_milletvekili", yil: 2023, kisa: "2023 MV", uzun: "2023 Milletvekili Genel Seçimi", tur: "parti" },
     { id: "2023_cb1", yil: 2023, kisa: "2023 CB 1. tur", uzun: "2023 Cumhurbaşkanlığı 1. tur", tur: "aday" },
     { id: "2023_cb2", yil: 2023, kisa: "2023 CB 2. tur", uzun: "2023 Cumhurbaşkanlığı 2. tur", tur: "aday" },
@@ -149,6 +150,7 @@
   };
   const PORTRAIT_BY_FOLD = {
     "mansur yavas": "mansur-yavas.jpg",
+    "mehmet ozhaseki": "mehmet-ozhaseki.jpg",
     "turgut altinok": "turgut-altinok.jpg",
     "recep tayyip erdogan": "recep-tayyip-erdogan.jpg",
     "kemal kilicdaroglu": "kemal-kilicdaroglu.jpg",
@@ -355,6 +357,7 @@
   /* ---------- checksums ---------- */
   function runChecksums() {
     const y2019 = DATA.yarislar["2019_ilce_baskan"];
+    const y2019bb = DATA.yarislar["2019_buyuksehir"];
     const mv = DATA.yarislar["2023_milletvekili"];
     const cb1 = DATA.yarislar["2023_cb1"];
     const cb2 = DATA.yarislar["2023_cb2"];
@@ -362,6 +365,7 @@
     const meclis = DATA.yarislar["2024_meclis"];
     const bb = DATA.yarislar["2024_buyuksehir"];
     const o2019 = ensureIlceOylar(y2019);
+    const o2019bb = ensureIlceOylar(y2019bb);
     const oIlce = ensureIlceOylar(ilce);
     const oMeclis = ensureIlceOylar(meclis);
     const oBb = ensureIlceOylar(bb);
@@ -370,6 +374,8 @@
 
     const adnks = (year) => DATA.mahalleler.reduce((s, m) => s + (m.adnks[year] || 0), 0);
     const koparan = ilce.mahalleler.find((m) => m.m === "KOPARAN");
+    const koparan19 = y2019bb.mahalleler.find((m) => m.m === "KOPARAN");
+    const incek19 = y2019bb.mahalleler.find((m) => m.m === "İNCEK");
     const kocakI = findAd(ilce.adaylar, "kocak");
     const odabI = findAd(ilce.adaylar, "odabasi");
     const simI = findAd(ilce.adaylar, "simsek");
@@ -378,6 +384,8 @@
     const chpM = meclis.partiler.findIndex((p) => (p.parti || p) === "CHP");
     const yavasI = findAd(bb.adaylar, "yavas");
     const altinI = findAd(bb.adaylar, "altinok");
+    const yavas19I = findAd(y2019bb.adaylar, "yavas");
+    const ozh19I = findAd(y2019bb.adaylar, "ozhaseki");
     const erI = findAd(cb1.adaylar, "erdogan");
     const kilI = findAd(cb1.adaylar, "kilicdaroglu");
     const oganI = findAd(cb1.adaylar, "sinan");
@@ -390,6 +398,13 @@
       ["2019 geçerli", y2019.ilce.gecerli, 75782],
       ["2019 MHP", o2019[mhpI], 41055],
       ["2019 İYİ", o2019[iyiI], 29626],
+      ["2019 BB seçmen", y2019bb.ilce.secmen, 89967],
+      ["2019 BB kullanılan", y2019bb.ilce.kullanan, 78728],
+      ["2019 BB geçerli", y2019bb.ilce.gecerli, 76332],
+      ["2019 BB Özhaseki", o2019bb[ozh19I], 38806],
+      ["2019 BB Yavaş", o2019bb[yavas19I], 35580],
+      ["2019 BB Koparan Özhaseki", koparan19.oylar[ozh19I], 197],
+      ["2019 BB İncek Yavaş", incek19.oylar[yavas19I], 1629],
       ["2023 MV seçmen", mv.ilce.secmen, 106348],
       ["2023 MV kullanılan", mv.ilce.kullanan, 97355],
       ["2023 MV geçerli", mv.ilce.gecerli, 95750],
@@ -695,7 +710,7 @@
       </section>
 
       <div class="sec-head">
-        <h2 class="sec-title" style="margin:0">Yedi yarış, ilçe özeti</h2>
+        <h2 class="sec-title" style="margin:0">${RACES.length} yarış, ilçe özeti</h2>
         <p>İlk sıradaki aday veya parti.</p>
       </div>
       <div class="grid-3">${racesCards}</div>
@@ -1027,7 +1042,7 @@
       <header class="hero">
         <p class="eyebrow">Yöntem</p>
         <h1>Kaynak, boşluklar, doğrulama</h1>
-        <p class="lede">Sayılar uydurulmadı. Sandık sonuçları YSK açık veriden mahalleye toplam; nüfus TÜİK ADNKS 31 Aralık. Derleme 27 Ağustos 2026.</p>
+        <p class="lede">Sayılar uydurulmadı. Sandık sonuçları YSK açık veriden mahalleye toplam; nüfus TÜİK ADNKS 31 Aralık. Derleme 27–28 Ağustos 2026. 2019 Ankara Büyükşehir Belediye Başkanlığı Gölbaşı mahalle oyları YSK sandık API’sinden (<code>secimId=16400</code>, <code>secimTuru=6</code>) eklendi.</p>
       </header>
       <div class="${allOk ? "ok-box" : "err-box"}" style="margin-bottom:1rem">
         <strong>${allOk ? "Tüm checksum’lar geçti." : "Checksum uyumsuzluğu var."}</strong>
@@ -1056,7 +1071,7 @@
         <ul class="gap-list">
           ${yazim.map((m) => `<li>${esc(m.ad)} — YSK <code>${esc(m.ysk)}</code> · belediye <code>${esc(m.belediye)}</code></li>`).join("")}
         </ul>
-        <p class="note">Kaynak: YSK <code>acikveri.ysk.gov.tr</code> / <code>data.ysk.gov.tr</code> (ilceId=637); TÜİK ADNKS 31 Aralık. İlçe toplamı 54 mahallenin toplamıdır.</p>
+        <p class="note">Kaynak: YSK <code>acikveri.ysk.gov.tr</code> / <code>data.ysk.gov.tr</code> (ilceId=637); TÜİK ADNKS 31 Aralık. İlçe toplamı 54 mahallenin toplamıdır. 2019 ABB (Ankara büyükşehir, Gölbaşı sandıkları) <code>getSecimSandikSonucList</code> ile eklendi; Özhaseki 38.806, Yavaş 35.580 (Yavaş Ankara genelini kazandı).</p>
       </section>
       <section class="card" style="margin-top:1rem">
         <h2>Logolar ve fotoğraflar</h2>
