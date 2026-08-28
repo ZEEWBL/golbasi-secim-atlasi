@@ -171,6 +171,8 @@ a:hover{color:#0f2430}
 }
 .chip:hover{border-color:var(--ink);transform:translateY(-1px)}
 .chip.tie{border-style:dashed;background:repeating-linear-gradient(135deg,#fff,#fff 6px,var(--gold-soft) 6px,var(--gold-soft) 12px)}
+.chip.win{border-color:var(--chip-c, var(--line))}
+.chip.win:hover{border-color:var(--chip-c, var(--ink));filter:brightness(.97)}
 .chip .sw{width:.55rem;height:.55rem;border-radius:50%;flex:none}
 
 .legend{display:flex;flex-wrap:wrap;gap:.55rem 1rem;font-size:.85rem;color:var(--muted);margin:.4rem 0 0}

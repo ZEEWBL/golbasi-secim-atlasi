@@ -87,6 +87,15 @@
       .replace(/\s+/g, " ")
       .trim();
   }
+  function hexMix(hex, t) {
+    const h = String(hex || "").replace("#", "");
+    if (h.length < 6) return hex || "#fff";
+    const r = parseInt(h.slice(0, 2), 16);
+    const g = parseInt(h.slice(2, 4), 16);
+    const b = parseInt(h.slice(4, 6), 16);
+    const m = (c) => Math.round(c + (255 - c) * t);
+    return "rgb(" + m(r) + "," + m(g) + "," + m(b) + ")";
+  }
   function partyColor(name) {
     const k = partyKey(name);
     if (!k) return MUTED;
@@ -609,8 +618,10 @@
         const meta = mahalleById(row.id);
         const w = winnerFromRow(ilce, row);
         const size = 11 + (11 * Math.log(row.secmen)) / Math.log(maxS);
-        const cls = w.tie ? "chip tie" : "chip";
-        return `<a class="${cls}" href="#/mahalle/${row.id}/2024_ilce_baskan" style="font-size:${size.toFixed(1)}px" title="${esc(meta.ad)} · ${esc(w.label)}">
+        const cls = w.tie ? "chip tie" : "chip win";
+        const c = w.color || MUTED;
+        const fill = w.tie ? "" : `--chip-c:${c};border-color:${c};background:repeating-linear-gradient(135deg,#fff,#fff 6px,${hexMix(c, 0.62)} 6px,${hexMix(c, 0.62)} 12px);`;
+        return `<a class="${cls}" href="#/mahalle/${row.id}/2024_ilce_baskan" style="${fill}font-size:${size.toFixed(1)}px" title="${esc(meta.ad)} · ${esc(w.label)}">
           ${winnerMarks(w)}${esc(meta.ad)}
         </a>`;
       })
