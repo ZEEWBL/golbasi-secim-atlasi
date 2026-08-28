@@ -149,7 +149,8 @@
     "huda par": "huda-par.png"
   };
   const PORTRAIT_BY_FOLD = {
-    "yakup odabasi": "yakup-odabasi.jpg",
+    "yakup odabasi": "yakup-odabasi.png",
+    "ramazan simsek": "ramazan-simsek.png",
     "mansur yavas": "mansur-yavas.jpg",
     "mehmet ozhaseki": "mehmet-ozhaseki.jpg",
     "turgut altinok": "turgut-altinok.jpg",
@@ -531,7 +532,6 @@
     const items = [
       ["ozet", "Özet", "#/"],
       ["mahalleler", "Mahalleler", "#/mahalleler"],
-      ["mahalle", "Mahalle", state.mahalleId ? "#/mahalle/" + state.mahalleId : "#/mahalleler"],
       ["karsilastir", "Karşılaştır", "#/karsilastir/" + state.cmpA + "/" + state.cmpB],
       ["kaynak", "Kaynak", "#/kaynak"]
     ];
@@ -618,13 +618,13 @@
     const racesCards = RACES.map((meta) => {
       const race = DATA.yarislar[meta.id];
       const oylar = ensureIlceOylar(race);
-      const top = rankedVotes(race, oylar, race.ilce.gecerli)[0];
       const k = katilim(race.ilce);
-      return `<a class="card" href="#/karsilastir" style="text-decoration:none;color:inherit">
-        <p class="kicker">${esc(meta.kisa)}</p>
-        <p class="winner-line">${contestantMark(top, "sm")}<span><b>${esc(top.label)}</b>${top.parti && !top.isParti ? ` <span style="color:var(--muted);font-weight:600">· ${esc(partyShort(top.parti))}</span>` : ""}</span></p>
-        <p class="foot">${fmt(top.oy)} oy · ${pct(top.oy, race.ilce.gecerli)} geçerli · katılım ${k ? N2.format(k) + "%" : "—"}</p>
-      </a>`;
+      const ic = race.ilce;
+      return `<section class="card">
+        <p class="kicker">${esc(meta.uzun)}</p>
+        <p class="foot" style="margin-bottom:.55rem">Gölbaşı toplam · seçmen ${fmt(ic.secmen)} · kullanılan ${fmt(ic.kullanan)} · geçerli ${fmt(ic.gecerli)} · katılım ${k ? N2.format(k) + "%" : "—"}</p>
+        <div class="chart">${voteBars(race, oylar, ic.gecerli, { showAll: false })}</div>
+      </section>`;
     }).join("");
 
     layout(`<div class="wrap">
@@ -708,9 +708,9 @@
 
       <div class="sec-head">
         <h2 class="sec-title" style="margin:0">${RACES.length} yarış, ilçe özeti</h2>
-        <p>İlk sıradaki aday veya parti.</p>
+        <p>Gölbaşı ilçe toplamı, yarış yarış.</p>
       </div>
-      <div class="grid-3">${racesCards}</div>
+      <div class="stack">${racesCards}</div>
     </div>`);
   }
 

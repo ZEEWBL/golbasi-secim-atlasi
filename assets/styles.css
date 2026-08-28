@@ -262,7 +262,7 @@ table.data a.mah{color:inherit;text-decoration:none;font-weight:700}
 .yazim{font-size:.85rem;color:var(--muted)}
 .yazim code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.86em;background:var(--paper-2);padding:.05rem .3rem;border-radius:4px}
 
-.logo-img,.portrait{max-width:none;flex:none;display:block;background:#fff}
+.logo-img,.portrait{max-width:none;flex:none;display:block;background:transparent}
 .logo-img{
   width:24px;height:24px;object-fit:contain;
   border-radius:4px;
