@@ -618,7 +618,8 @@
         let wm = "";
         if (w.tie && w.tied && w.tied.length) wm = w.tied.map((t) => logoWm(t.parti)).join("");
         else wm = logoWm(w.partiRaw || w.parti);
-        return `<a class="${cls}" href="#/mahalle/${row.id}/2024_ilce_baskan" style="font-size:${size.toFixed(1)}px" title="${esc(meta.ad)} · ${esc(w.label)}">
+        const ring = w.tie ? "#9a7433" : (w.color || MUTED);
+        return `<a class="${cls}" href="#/mahalle/${row.id}/2024_ilce_baskan" style="font-size:${size.toFixed(1)}px;border-color:${ring}" title="${esc(meta.ad)} · ${esc(w.label)}">
           ${wm}${winnerMarks(w)}${esc(meta.ad)}
         </a>`;
       })
