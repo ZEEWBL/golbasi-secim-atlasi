@@ -149,6 +149,7 @@
     "huda par": "huda-par.png"
   };
   const PORTRAIT_BY_FOLD = {
+    "yakup odabasi": "yakup-odabasi.jpg",
     "mansur yavas": "mansur-yavas.jpg",
     "mehmet ozhaseki": "mehmet-ozhaseki.jpg",
     "turgut altinok": "turgut-altinok.jpg",
