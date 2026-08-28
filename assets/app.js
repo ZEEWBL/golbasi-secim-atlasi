@@ -181,26 +181,22 @@
   function iniSpan(text, color, extraCls) {
     return `<span class="ini${extraCls ? " " + extraCls : ""}" style="background:${color || MUTED}" aria-hidden="true">${esc(text)}</span>`;
   }
-  function mediaWithFallback(imgClass, src, alt, ini, color, iniCls) {
-    return `<span class="media-wrap"><img class="${imgClass}" src="${src}" alt="${esc(alt)}" loading="lazy" decoding="async" onerror="this.style.display='none';this.nextElementSibling.removeAttribute('hidden')">${iniSpan(ini, color, iniCls).replace("<span ", "<span hidden ")}</span>`;
+  function mediaImg(imgClass, src, alt) {
+    return `<img class="${imgClass}" src="${src}" alt="${esc(alt)}" loading="lazy" decoding="async" onerror="this.remove()">`;
   }
   function logoMark(party, cls) {
     const file = logoFile(party);
-    const col = partyColor(party);
+    if (!file) return "";
     const alt = partyShort(party) || displayName(party) || "parti";
-    const ini = initialsOf(alt);
     const imgCls = "logo-img" + (cls ? " " + cls : "");
-    if (!file) return iniSpan(ini, col, cls);
-    return mediaWithFallback(imgCls, "./assets/logos/" + file, alt, ini, col, cls);
+    return mediaImg(imgCls, "./assets/logos/" + file, alt);
   }
   function portraitMark(name, party, cls) {
     const file = portraitFile(name);
-    const col = partyColor(party || name);
+    if (!file) return "";
     const alt = displayName(name);
-    const ini = initialsOf(alt);
     const imgCls = "portrait" + (cls ? " " + cls : "");
-    if (!file) return iniSpan(ini, col, "portrait-ini" + (cls ? " " + cls : ""));
-    return mediaWithFallback(imgCls, "./assets/portraits/" + file, alt, ini, col, "portrait-ini" + (cls ? " " + cls : ""));
+    return mediaImg(imgCls, "./assets/portraits/" + file, alt);
   }
   function contestantMark(c, cls) {
     if (c && !c.isParti) return portraitMark(c.ad || c.label, c.parti, cls);
