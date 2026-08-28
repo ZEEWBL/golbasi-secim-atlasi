@@ -151,7 +151,9 @@
   const PORTRAIT_BY_FOLD = {
     "yakup odabasi": "yakup-odabasi.png",
     "ramazan simsek": "ramazan-simsek.png",
-    "mansur yavas": "mansur-yavas.jpg",
+    "gokhan kocak": "gokhan-kocak.png",
+    "mahmut aksoy": "mahmut-aksoy.png",
+    "mansur yavas": "mansur-yavas.png",
     "mehmet ozhaseki": "mehmet-ozhaseki.jpg",
     "turgut altinok": "turgut-altinok.jpg",
     "recep tayyip erdogan": "recep-tayyip-erdogan.jpg",
