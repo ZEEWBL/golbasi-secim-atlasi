@@ -537,8 +537,7 @@
     ];
     return items
       .map(([id, lab, href]) => {
-        const cur = state.view === id || (id === "mahalleler" && state.view === "mahalle" && false);
-        const on = state.view === id || (id === "mahalle" && state.view === "mahalle");
+        const on = state.view === id || (id === "mahalleler" && state.view === "mahalle");
         return `<a href="${href}" ${on ? 'aria-current="page"' : ""}>${esc(lab)}</a>`;
       })
       .join("");
@@ -623,7 +622,7 @@
       return `<section class="card">
         <p class="kicker">${esc(meta.uzun)}</p>
         <p class="foot" style="margin-bottom:.55rem">Gölbaşı toplam · seçmen ${fmt(ic.secmen)} · kullanılan ${fmt(ic.kullanan)} · geçerli ${fmt(ic.gecerli)} · katılım ${k ? N2.format(k) + "%" : "—"}</p>
-        <div class="chart">${voteBars(race, oylar, ic.gecerli, { showAll: false })}</div>
+        <div class="chart">${voteBars(race, oylar, ic.gecerli, { showAll: true })}</div>
       </section>`;
     }).join("");
 
